@@ -45,6 +45,7 @@ export default {
 
     getKeyAndValue(rawKey, locale, formData) {
       const ARR_REGEX = () => /\[\d+\]$/g;
+      const ARR_MD_REGEX = () => /\]\[\d+\]$/g;
       const LOC_LEN = locale.key.length + 1;
 
       let key = rawKey;
@@ -52,9 +53,14 @@ export default {
       // Remove '.en' ending from key
       if (key.slice(-LOC_LEN) === `.${locale.key}`) key = key.slice(0, -LOC_LEN);
 
-      // Is key is an array, we need to remove the '.en' part from '.en[0]'
+      // Is key is an array, we need to remove the '.en' part from '.en][0]'
+      const isMultiArray = !!key.match(ARR_MD_REGEX());
       const isArray = !!key.match(ARR_REGEX());
-      if (isArray) {
+
+      if (isMultiArray) {
+        const result = ARR_MD_REGEX().exec(key);
+        key = `${key.slice(0, result.index - LOC_LEN)}${key.slice(result.index)}`;
+      } else if (isArray) {
         const result = ARR_REGEX().exec(key);
         key = `${key.slice(0, result.index - LOC_LEN)}${key.slice(result.index)}`;
       }
