@@ -46,9 +46,15 @@ export default {
     getKeyAndValue(rawKey, locale, formData) {
       const ARR_REGEX = () => /\[\d+\]$/g;
       const ARR_MD_REGEX = () => /\]\[\d+\]$/g;
+      const ARR_OPEN_REGEX = () => /.+?\[/g;
       const LOC_LEN = locale.key.length + 1;
 
       let key = rawKey;
+
+      let openMatch = key.match(ARR_OPEN_REGEX());
+      if (!!openMatch && openMatch[0].includes(`.${locale.key}`)) {
+          return [key.replace(`.${locale.key}`, `[${locale.key}]`), formData.get(rawKey)];
+      }
 
       // Remove '.en' ending from key
       if (key.slice(-LOC_LEN) === `.${locale.key}`) key = key.slice(0, -LOC_LEN);
